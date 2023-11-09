@@ -43,7 +43,7 @@ services:
     image: phpmyadmin
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       PMA_HOST: db
       PMA_PORT: 3306
       UPLOAD_LIMIT: 100000000
