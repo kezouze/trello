@@ -19,3 +19,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/card_lists', [\App\Http\Controllers\Api\CardListController::class, 'index'])->name("card_lists.index");
+Route::post('/card_lists/update_order', [\App\Http\Controllers\Api\CardListController::class, 'orderUpdate'])->name("card_lists.update_order");
