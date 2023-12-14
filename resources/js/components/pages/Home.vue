@@ -15,16 +15,21 @@
             <div>
                 <li class="card-list-li">
                     {{ card_list.name }} {{ card_list.position }}
-                    <draggable v-model="card_list.cards" tag="ul" class="card-ul" @change="updateCardPosition()">
+                    <draggable v-model="card_list.cards" tag="ul" class="card-ul" @change="updateCardPosition(card_list.id)">
                         <template #item="{ element: card }">
-                <li class="card-li">⸰{{ card.title }} {{ card.description }} {{ card.position }}</li>
+                            <div>
+                                <li class="card-li">⸰ {{ card.title }} {{ card.description }} / position : {{ card.position }}</li>
+                                <button class="modify-btn" @click="getCard(card.id)">Modifier</button>
+                                <div class="myModal" v-show="myModal">
+                                    <span @click="closeMyModal()">X</span>
+                                    <p>Coucou</p>
+                                </div>
+                            </div>
+                        </template>
+                    </draggable>
+                </li>
+            </div>
         </template>
-    </draggable>
-    </li>
-
-    </div>
-    </template>
-
     </draggable>
 </template>
 
@@ -39,7 +44,8 @@ export default {
     },
     data() {
         return {
-            card_lists: []
+            card_lists: [],
+            myModal: false
         }
     },
 
@@ -76,17 +82,41 @@ export default {
                     console.error('Echec de la maj des positions', error);
                 })
         },
-        updateCardPosition() {
+        updateCardPosition(id) {
             let updatedPositions = []
-            this.card.forEach((card, index) => {
-                updatedPositions.push({
-                    id: card.id,
-                    position: index + 1
-                })
+            this.card_lists.forEach((card_list, index) => {
+                if (card_list.id === id) {
+                    card_list.cards.forEach((card, indexCard) => {
+                        updatedPositions.push({
+                            id: card.id,
+                            position: indexCard + 1
+                        })
+                    })
+                }
             })
+            axios.post('http://localhost:8008/api/card_list/update_order', { id: updatedPositions })
+            .then(response => {
+                console.log("maj des positions réussie", response)
+            })
+        },
+        getCard(id) {
+            axios.get("http://localhost:8008/api/cards/get_card/"+id)
+            .then(response => {
+                console.log('great success', response)
+                console.log(response.data.card)
+                this.myModal = true
+            })
+            .catch(error => {
+                console.log('echec de la mission', error)
+            })
+        },
+
+        closeMyModal() {
+            this.myModal = false
         }
-    }
+    },
 }
+
 </script>
 
 <style scoped>
@@ -113,7 +143,6 @@ export default {
 }
 
 .card-ul li {
-    border: 1px solid hotpink;
     width: fit-content;
 }
 
@@ -124,4 +153,19 @@ export default {
 .card-li:last-of-type {
     background: rgb(122, 180, 36);
 } */
+
+.modify-btn {
+    border: 1px solid #000;
+    background: yellow;
+    padding : 0 8px;
+}
+
+.myModal {
+    height: 400px;
+    width: 400px;
+    background: hotpink;
+    position: absolute;
+    top: 50%;
+    right: 50%;
+}
 </style>
