@@ -18,12 +18,13 @@
                     <draggable v-model="card_list.cards" tag="ul" class="card-ul" @change="updateCardPosition(card_list.id)">
                         <template #item="{ element: card }">
                             <div>
-                                <li class="card-li">⸰ {{ card.title }} {{ card.description }} / position : {{ card.position }}</li>
+                                <li class="card-li">⸰ {{ card.title }} <br> {{ card.description }} <br>Position : {{ card.position }}</li>
                                 <button class="modify-btn" @click="getCard(card.id)">Modifier</button>
-                                <div class="myModal" v-show="myModal">
+                                <hr>
+                                <!-- <div class="myModal" v-show="myModal">
                                     <span @click="closeMyModal()">X</span>
                                     <p>Coucou</p>
-                                </div>
+                                </div> -->
                             </div>
                         </template>
                     </draggable>
@@ -31,6 +32,37 @@
             </div>
         </template>
     </draggable>
+    <form class="w-full max-w-lg" v-if="form.show">
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full px-3 mb-6 md:mb-0">
+      <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-first-name">
+        Titre
+      </label>
+      <input class="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" id="grid-first-name" type="text" placeholder="Jane" v-model="form.title">
+    </div>
+    <div class="w-full px-3">
+      <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-last-name">
+        Description
+      </label>
+      <textarea class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-last-name" v-model="form.description">
+        </textarea>
+        <label for="mySelect">Status</label>
+        <select class="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" name="mySelect" id="mySelect">
+            <option value="1">To do</option>
+            <option value="2">In progress</option>
+            <option value="3">Done</option>
+        </select>
+    </div>
+    <div class="md:flex md:items-center">
+    <div class="md:w-1/3"></div>
+    <div class="md:w-2/3">
+      <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="button" @click="save()">
+        Mettre à jour
+      </button>
+    </div>
+  </div>
+  </div>
+</form>
 </template>
 
 <script>
@@ -45,20 +77,42 @@ export default {
     data() {
         return {
             card_lists: [],
-            myModal: false
+            // myModal: false,
+            form: {
+                title: null,
+                description: null,
+                show: false
+            },
         }
     },
 
     mounted() {
-        axios.get('http://localhost:8008/api/card_lists')
+       this.getData()
+    },
+    methods: {
+        getData() {
+            axios.get('http://localhost:8008/api/card_lists')
             .then(response => {
                 this.card_lists = response.data.card_list
             })
             .catch(error => {
                 console.error('Erreur mounted', error)
             });
-    },
-    methods: {
+        },
+        save() {
+            axios.post('http://localhost:8008/api/cards/update', { card: this.form })
+                .then(response => {
+                    this.form = {
+                        title: null,
+                        description: null,
+                        show: false
+                    }
+                    this.getData()
+                })
+                .catch(error => {
+                    console.error('Echec de la maj des positions', error);
+                })
+        },
         updatePosition() {
             let updatedPositions = []
             this.card_lists.forEach((card, index) => {
@@ -104,6 +158,8 @@ export default {
             .then(response => {
                 console.log('great success', response)
                 console.log(response.data.card)
+                this.form = response.data.card
+                this.form.show = true;
                 this.myModal = true
             })
             .catch(error => {
@@ -167,5 +223,9 @@ export default {
     position: absolute;
     top: 50%;
     right: 50%;
+}
+
+hr {
+    margin: 10px;
 }
 </style>

@@ -30,4 +30,15 @@ class CardController extends Controller
             'card' => $card
         ]);
     }
+
+    public function update(Request $request) {
+        if($card = Card::find($request->get('card')['id'])) {
+            $card->update([
+                'title' => $request->get('card')['title'],
+                'description' => $request->get('card')['description']
+            ]);
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false]);
+    }
 }
